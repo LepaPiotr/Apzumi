@@ -19,11 +19,15 @@ public class PostRESTController {
     @Autowired
     PostService postService;
 
+    @GetMapping()
+    public List<Post> test(){
+        return postRepository.findWithoutUserOrderByTitle();
+    }
 
     @GetMapping("/{isUserId}/{isSorted}")
     public List<Post> findAll(@PathVariable("isUserId") boolean userId, @PathVariable("isSorted") boolean sorted){
-//        postService.getPosts(userId, sorted);
-       return postRepository.findAll();
+
+       return postService.getPosts(userId, sorted);
     }
 
     @DeleteMapping("/{id}")
@@ -32,8 +36,8 @@ public class PostRESTController {
     }
 
     @PostMapping
-    private Post modPost(@RequestBody Post post){
-        return postRepository.save(postService.getPostToUpdate(post));
+    public Post modPost(@RequestBody Post post){
+        return postService.modPost(post);
     }
 
     @RequestMapping("/getPosts")

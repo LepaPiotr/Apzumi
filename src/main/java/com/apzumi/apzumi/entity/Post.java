@@ -23,6 +23,13 @@ public class Post {
         this.wasEditedByUser = wasEditedByUser;
     }
 
+    public Post(long id, String title, String body, boolean wasEditedByUser) {
+        this.id = id;
+        this.title = title;
+        this.body = body;
+        this.wasEditedByUser = wasEditedByUser;
+    }
+
     public long getId() {
         return id;
     }
