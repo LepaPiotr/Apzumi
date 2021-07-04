@@ -1,10 +1,14 @@
 package com.apzumi.apzumi.TDDTests;
 
+import com.apzumi.apzumi.entity.Post;
+import com.apzumi.apzumi.repository.PostRepository;
+import com.apzumi.apzumi.services.PostService;
 import org.hamcrest.CoreMatchers;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
+import org.junit.jupiter.api.TestMethodOrder;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -15,25 +19,29 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
-import java.math.BigDecimal;
-import java.util.Date;
+import java.util.List;
+import java.util.Optional;
 
-@RunWith(SpringRunner.class)
 @SpringBootTest
 @AutoConfigureMockMvc
 @ExtendWith(SpringExtension.class)
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class RESTTests {
 
     @Autowired
     private MockMvc mvc;
 
     @Autowired
-    PostsRepository postsRepository;
+    PostRepository postRepository;
+
+    @Autowired
+    PostService postService;
 
     @Test
     @Order(1)
     public void getPosts() throws Exception {
-        postsRepository.save(new Post(1, 1, "Title", "Body"));
+        System.out.println("robie get 1");
+        postRepository.save(new Post(1, 1, "Title", "Body", false));
         mvc.perform(MockMvcRequestBuilders.get("/posts")
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(MockMvcResultMatchers.status().isOk())
@@ -44,20 +52,33 @@ public class RESTTests {
 
     @Test
     @Order(2)
-    public void deletePosts() throws Exception {
-        Post post = postsRepository.findById(1);
-        post = new Post( post.getId(), post.getUserId(), "ChangedTitle" ,  "ChangedBody");
-        postsRepository.save(post);
-        post = postsRepository.findById(1);
-        if(post == null || post.getTitle() != "ChangedTitle" || post.getBody() != "ChangedBody")
+    public void modPosts() {
+        System.out.println("robie mod 2");
+        Optional<Post> postOpt = postRepository.findById(1L);
+        Post post = new Post( postOpt.get().getId(), postOpt.get().getUserId(), "ChangedTitle" ,  "ChangedBody", true);
+        postRepository.save(post);
+        postOpt = postRepository.findById(1L);
+        if(!postOpt.isPresent() || !postOpt.get().getTitle().equals("ChangedTitle") || !postOpt.get().getBody().equals("ChangedBody"))
             assert false;
     }
 
     @Test
     @Order(3)
-    public void deletePosts() throws Exception {
-        postsRepository.delete(1);
-        Post post = postsRepository.findById(1);
-        assert post != null && post.getId() >= 1;
+    public void deletePosts() {
+        System.out.println("robie del 3");
+        postRepository.deleteById(1L);
+        Optional<Post> post = postRepository.findById(1L);
+        if(post.isPresent())
+        assert false;
+    }
+
+    @Test
+    @Order(4)
+    public void getPostsFromAPI() {
+        postService.addUpdatePosts();
+        List<Post> all = postRepository.findAll();
+        if(all.isEmpty()){
+            assert false;
+        }
     }
 }
